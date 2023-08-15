@@ -59,10 +59,7 @@ class _MapViewState extends State<MapView> {
   Set<Marker> markers = {};
 
   List<Restaurant> restaurants = [];
-
-  String targetName = "";
-  String targetGenre = "";
-  String targetAddress = "";
+  Restaurant? targetRestaurant;
 
   // PolylinePoints用オブジェクト
   late PolylinePoints polylinePoints;
@@ -105,8 +102,6 @@ class _MapViewState extends State<MapView> {
 
         // ここで周辺の情報取得する
         await _getRestaurant();
-        _setMarker();
-
       });
       await _getAddress();
     }).catchError((e) {
@@ -116,12 +111,16 @@ class _MapViewState extends State<MapView> {
   }
 
 
+  // データ取得
   _getRestaurant() async {
     final store = FireStore();
     restaurants = await store.fetchRestaurant(
       _currentPosition.latitude,
       _currentPosition.longitude,
     );
+    setState(() {
+      restaurants;
+    });
   }
 
 
@@ -130,7 +129,9 @@ class _MapViewState extends State<MapView> {
     try {
       // 座標を使用して場所を取得する
       List<Placemark> p = await placemarkFromCoordinates(
-          _currentPosition.latitude, _currentPosition.longitude);
+        _currentPosition.latitude,
+        _currentPosition.longitude
+      );
 
       // 最も確率の高い結果を取得
       Placemark place = p[0];
@@ -170,14 +171,14 @@ class _MapViewState extends State<MapView> {
         },
         controller: controller,
         focusNode: focusNode,
-        decoration: new InputDecoration(
+        decoration: InputDecoration(
           prefixIcon: prefixIcon,
           suffixIcon: suffixIcon,
           labelText: label,
           filled: true,
           fillColor: Colors.white,
           enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.all(
+            borderRadius: const BorderRadius.all(
               Radius.circular(10.0),
             ),
             borderSide: BorderSide(
@@ -186,7 +187,7 @@ class _MapViewState extends State<MapView> {
             ),
           ),
           focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.all(
+            borderRadius: const BorderRadius.all(
               Radius.circular(10.0),
             ),
             borderSide: BorderSide(
@@ -194,7 +195,7 @@ class _MapViewState extends State<MapView> {
               width: 2,
             ),
           ),
-          contentPadding: EdgeInsets.all(15),
+          contentPadding: const EdgeInsets.all(15),
           hintText: hint,
         ),
       ),
@@ -203,106 +204,64 @@ class _MapViewState extends State<MapView> {
 
   Widget _searchRestaurant() {
     return SafeArea(
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: Padding(
-                  padding: const EdgeInsets.only(top: 10.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.black38
-                    ),
-                    width: MediaQuery.of(context).size.width * 0.85,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: <Widget>[
-                          Text(
-                            '場所検索',
-                            style: TextStyle(fontSize: 20.0, color: Colors.white),
-                          ),
-                          SizedBox(height: 10),
-                          _textField(
-                              label: '開始位置',
-                              hint: '開始位置を入力',
-                              prefixIcon: Icon(Icons.directions_walk),
-                              controller: startAddressController,
-                              focusNode: startAddressFocusNode,
-                              width: MediaQuery.of(context).size.width,
-                              locationCallback: (String value) {
-                                setState(() {
-                                  _startAddress = value;
-                                });
-                              }),
-                          SizedBox(height: 10),
-                          Visibility(
-                            visible: _placeDistance == null ? false : true,
-                            child: Text(
-                              'DISTANCE: $_placeDistance km',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 5),
-                          ElevatedButton(
-                            onPressed: () {
-                              _RouteDistance();
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Text(
-                                'ルート検索'.toUpperCase(),
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 20.0,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            );
-  }
-
-  // 店舗情報
-  Widget restaurantInfo() {
-    return SafeArea(
       child: Align(
-        alignment: Alignment.bottomCenter,
+        alignment: Alignment.topCenter,
         child: Padding(
           padding: const EdgeInsets.only(top: 10.0),
           child: Container(
             decoration: BoxDecoration(
-              color: Colors.white
+              color: Colors.black38
             ),
             width: MediaQuery.of(context).size.width * 0.85,
-            height: MediaQuery.of(context).size.width * 0.4,
             child: Padding(
               padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
                   Text(
-                    targetName,
-                    style: TextStyle(fontSize: 20.0, color: Colors.black),
+                    '場所検索',
+                    style: TextStyle(fontSize: 20.0, color: Colors.white),
                   ),
                   SizedBox(height: 10),
-                  Text(
-                    targetGenre,
-                    style: TextStyle(fontSize: 15.0, color: Colors.black),
-                  ),
+                  _textField(
+                      label: '開始位置',
+                      hint: '開始位置を入力',
+                      prefixIcon: Icon(Icons.directions_walk),
+                      controller: startAddressController,
+                      focusNode: startAddressFocusNode,
+                      width: MediaQuery.of(context).size.width,
+                      locationCallback: (String value) {
+                        setState(() {
+                          _startAddress = value;
+                        });
+                      }),
                   SizedBox(height: 10),
-                  Text(
-                    targetAddress,
-                    style: TextStyle(fontSize: 15.0, color: Colors.black),
+                  Visibility(
+                    visible: _placeDistance == null ? false : true,
+                    child: Text(
+                      'DISTANCE: $_placeDistance km',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16
+                      ),
+                    ),
                   ),
-                  SizedBox(height: 10),
+                  SizedBox(height: 5),
+                  ElevatedButton(
+                    onPressed: () {
+                      _RouteDistance();
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        'ルート検索'.toUpperCase(),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20.0,
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -312,34 +271,161 @@ class _MapViewState extends State<MapView> {
     );
   }
 
-  // 店情報をマーカーにセットする
-  void _setMarker() {
-    for (var restaurant in restaurants) {
-      var test2 = restaurant.latitude;
-      var test3 = restaurant.longitude;
-      String test = '($test2, $test3)';
-      // print(restaurant.id);
+  // 店舗情報
+  // Widget restaurantInfo() {
+  //   return SafeArea(
+  //     child: Align(
+  //       alignment: Alignment.topCenter,
+  //       child: Padding(
+  //         padding: const EdgeInsets.only(top: 10.0),
+  //         child: Container(
+  //           decoration: BoxDecoration(
+  //             color: Colors.white
+  //           ),
+  //           width: MediaQuery.of(context).size.width * 0.85,
+  //           height: MediaQuery.of(context).size.width * 0.4,
+  //           child: Padding(
+  //             padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
+  //             child: Column(
+  //               mainAxisSize: MainAxisSize.min,
+  //               children: <Widget>[
+  //                 Text(
+  //                   targetName,
+  //                   style: TextStyle(fontSize: 20.0, color: Colors.black),
+  //                 ),
+  //                 SizedBox(height: 10),
+  //                 Text(
+  //                   targetGenre,
+  //                   style: TextStyle(fontSize: 15.0, color: Colors.black),
+  //                 ),
+  //                 SizedBox(height: 10),
+  //                 Text(
+  //                   targetAddress,
+  //                   style: TextStyle(fontSize: 15.0, color: Colors.black),
+  //                 ),
+  //                 SizedBox(height: 10),
+  //               ],
+  //             ),
+  //           ),
+  //         ),
+  //       ),
+  //     ),
+  //   );
+  // }
 
-      Marker test4 = Marker(
-        markerId: MarkerId(test),
-        position: LatLng(test2, test3),
-        infoWindow: InfoWindow(
-          title: restaurant.name,
-          snippet: "($test2, $test3)",
-        ),
-        icon: BitmapDescriptor.defaultMarker,
-        onTap: () {
-          setState(() {
-            targetName = restaurant.name;
-            targetGenre = restaurant.genre;
-            targetAddress = restaurant.address;
-          });
-        },
-      );
-      // マーカーをリストに追加する
-      markers.add(test4);
-    }
-    setState(() {});
+
+  // ドラグアップできるウィジェット
+  Widget _draggableScrollable() {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.2,
+      minChildSize: 0.2,
+      maxChildSize: 0.9,
+      builder: (BuildContext context, ScrollController scrollController) {
+        return Container(
+          decoration: const BoxDecoration(
+            color: Color.fromARGB(255, 218, 243, 255),
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(16),
+              topRight: Radius.circular(16),
+            ),
+          ),
+          // カート商品表示のタイトルとアイテム一覧を表示
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              //　カート商品表示のタイトル
+              const SizedBox(
+                height: 40,
+                child: Center(
+                  child: Text(
+                    "付近のタバコOKな居酒屋",
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+              //　カートのアイテム一覧を表示
+              Expanded(
+                child: ListView.builder(
+                  controller: scrollController,
+                  itemCount: restaurants.length,
+                  itemBuilder: (context, index) {
+                    final restaurant = restaurants[index];
+                    return GestureDetector(
+                      onTap: () async {
+                        final zoomLevel = await mapController.getZoomLevel();//現在のズームレベルを取得（現在のズームの倍率を変えないため）
+	                      //GoogleMapControllerのメソッドで任意の座標にカメラポジションを移動させる
+                        await mapController.animateCamera(
+                          CameraUpdate.newCameraPosition(
+                            CameraPosition(
+                              target: LatLng(
+                                restaurant.latitude,
+                                restaurant.longitude
+                              ),
+                              zoom: zoomLevel,
+                            ),
+                          ),
+                        );
+                        setState(() {
+                          targetRestaurant = restaurant;
+                        });
+                      },
+                      child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 3,
+                            child: Container(
+                              height: 100,
+                              color: Colors.grey.withOpacity(0.7),
+                              child: const Center(
+                                  child: Text(
+                                "Image",
+                                style: TextStyle(
+                                  color: Colors.white,
+                                ),
+                              )),
+                            ),
+                          ),
+                          const SizedBox(
+                            width: 8,
+                          ),
+                          Expanded(
+                            flex: 7,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  restaurant.name,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold
+                                  )
+                                ),
+                                Text(restaurant.genre),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () {},
+                            icon: const Icon(
+                              Icons.delete,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
 
@@ -419,8 +505,6 @@ class _MapViewState extends State<MapView> {
 
 
 
-
-
   @override
   void initState() {
     super.initState();
@@ -441,7 +525,26 @@ class _MapViewState extends State<MapView> {
           children: <Widget>[
 
             GoogleMap(
-              markers: Set<Marker>.from(markers),
+              markers: restaurants.map((Restaurant restaurant) {
+                var latitude = restaurant.latitude;
+                var longitude = restaurant.longitude;
+                String location = '($latitude, $longitude)';
+                return Marker(
+                  markerId: MarkerId(location),
+                  position: LatLng(latitude, longitude),
+                  icon: restaurant.id == targetRestaurant?.id
+                      ? BitmapDescriptor.defaultMarker
+                      : BitmapDescriptor.defaultMarkerWithHue(180),
+                  infoWindow: InfoWindow(
+                    title: restaurant.name,
+                    snippet: "($latitude, $longitude)",
+                  ),
+                  onTap: () {
+                    setState(() {
+                      targetRestaurant = restaurant;
+                    });
+                  });
+                }).toSet(),
               initialCameraPosition: _initialLocation,
               myLocationEnabled: true,
               myLocationButtonEnabled: false,
@@ -460,6 +563,8 @@ class _MapViewState extends State<MapView> {
                 print("ストップ");
               },
             ),
+
+            _draggableScrollable(),
 
             SafeArea(
               child: Align(
@@ -554,11 +659,7 @@ class _MapViewState extends State<MapView> {
             // _searchRestaurant(),
 
             // 店情報表示
-            restaurantInfo()
-
-
-
-
+            // restaurantInfo()
 
           ],
         ),
