@@ -7,6 +7,7 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:suerogu/firestore.dart';
 import 'package:suerogu/model/restaurant.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:suerogu/page/detail.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -273,47 +274,6 @@ class _MapViewState extends State<MapView> {
     );
   }
 
-  // 店舗情報
-  // Widget restaurantInfo() {
-  //   return SafeArea(
-  //     child: Align(
-  //       alignment: Alignment.topCenter,
-  //       child: Padding(
-  //         padding: const EdgeInsets.only(top: 10.0),
-  //         child: Container(
-  //           decoration: BoxDecoration(
-  //             color: Colors.white
-  //           ),
-  //           width: MediaQuery.of(context).size.width * 0.85,
-  //           height: MediaQuery.of(context).size.width * 0.4,
-  //           child: Padding(
-  //             padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
-  //             child: Column(
-  //               mainAxisSize: MainAxisSize.min,
-  //               children: <Widget>[
-  //                 Text(
-  //                   targetName,
-  //                   style: TextStyle(fontSize: 20.0, color: Colors.black),
-  //                 ),
-  //                 SizedBox(height: 10),
-  //                 Text(
-  //                   targetGenre,
-  //                   style: TextStyle(fontSize: 15.0, color: Colors.black),
-  //                 ),
-  //                 SizedBox(height: 10),
-  //                 Text(
-  //                   targetAddress,
-  //                   style: TextStyle(fontSize: 15.0, color: Colors.black),
-  //                 ),
-  //                 SizedBox(height: 10),
-  //               ],
-  //             ),
-  //           ),
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
 
   Widget _test() {
     return DraggableScrollableSheet(
@@ -435,12 +395,31 @@ class _MapViewState extends State<MapView> {
                               });
                               // slideInModal();
 
-                              Navigator.push(
-                                context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ModalDetailPage(),
-                                  ),
-                                );
+                              // Navigator.push(
+                              //   context,
+                              //   MaterialPageRoute(
+                              //     builder: (context) => ModalDetailPage(),
+                              //   ),
+                              // );
+                              Navigator.of(context).push(
+                                PageRouteBuilder(
+                                  pageBuilder: (context, animation, secondaryAnimation) {
+                                    return Detail(restaurant: targetRestaurant!);
+                                  },
+                                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                                    final Offset begin = Offset(1.0, 0.0); // 右から左
+                                    // final Offset begin = Offset(-1.0, 0.0); // 左から右
+                                    final Offset end = Offset.zero;
+                                    final Animatable<Offset> tween = Tween(begin: begin, end: end)
+                                        .chain(CurveTween(curve: Curves.easeInOut));
+                                    final Animation<Offset> offsetAnimation = animation.drive(tween);
+                                    return SlideTransition(
+                                      position: offsetAnimation,
+                                      child: child,
+                                    );
+                                  },
+                                ),
+                              );
 
                             },
                             child: Padding(
@@ -767,22 +746,3 @@ class _MapViewState extends State<MapView> {
 }
 
 
-class ModalDetailPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Modal Detail'),
-      ),
-      body: Container(
-        color: Colors.green,
-        child: Center(
-          child: Text(
-            'Detail Page',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
-          ),
-        ),
-      ),
-    );
-  }
-}
