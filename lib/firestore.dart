@@ -23,10 +23,6 @@ class FireStore {
     double latitude,  // 緯度
     double longitude,  // 経度
   ) async {
-    print("取得するおおおおおおおおおおおお");
-    // final docs1 = await db.collection(collection).get();
-    // final docs = await db.collection(collection).limit(20);
-
     // 「かつ」の指定ができないから、2回に分けて取得する
     final docs1 = await db.collection(collection).limit(limit)
       // 緯度

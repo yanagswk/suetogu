@@ -46,6 +46,8 @@ class _MapViewState extends State<MapView> {
   // 現在位置の記憶用
   late Position _currentPosition;
 
+  var  _scrollController = DraggableScrollableController();
+
   // 場所の記憶用
   final startAddressController = TextEditingController();
   final destinationAddressController = TextEditingController();
@@ -313,117 +315,192 @@ class _MapViewState extends State<MapView> {
   //   );
   // }
 
+  Widget _test() {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.001,
+      minChildSize: 0.001,
+      maxChildSize: 0.9,
+      controller: _scrollController,
+      builder: (BuildContext context, ScrollController scrollController) {
+        return Container(
+          color: Colors.blue[100],
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.cancel_outlined),
+                    onPressed: () {
+                      slideOutModal();
+                    })
+                ],
+              ),
+              // Text(
+              //   targetRestaurant != null ? targetRestaurant!.name : "",
+              //   // "",
+              //   style: TextStyle(fontSize: 20.0, color: Colors.black),
+              // ),
+              // SizedBox(height: 10),
+              // Text(
+              //   // targetRestaurant != null ? targetRestaurant!.genre : "",
+              //   "",
+              //   style: TextStyle(fontSize: 15.0, color: Colors.black),
+              // ),
+              // SizedBox(height: 10),
+              // Text(
+              //   // targetRestaurant != null ? targetRestaurant!.address : "",
+              //   "",
+              //   style: TextStyle(fontSize: 15.0, color: Colors.black),
+              // ),
+              // SizedBox(height: 10),
+
+              Expanded(
+                child: ListView.builder(
+                  controller: scrollController,
+                  itemCount: 25,
+                  itemBuilder: (BuildContext context, int index) {
+                    return ListTile(title: Text('Item $index'));
+                  },
+                ),
+              )
+            ]
+          )
+
+        );
+      },
+    );
+  }
+
 
   // ドラグアップできるウィジェット
   Widget _draggableScrollable() {
     return DraggableScrollableSheet(
       initialChildSize: 0.2,
       minChildSize: 0.2,
-      maxChildSize: 0.9,
+      maxChildSize: 0.5,
       builder: (BuildContext context, ScrollController scrollController) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Color.fromARGB(255, 218, 243, 255),
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(16),
-              topRight: Radius.circular(16),
-            ),
-          ),
-          // カート商品表示のタイトルとアイテム一覧を表示
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              //　カート商品表示のタイトル
-              const SizedBox(
-                height: 40,
-                child: Center(
-                  child: Text(
-                    "付近のタバコOKな居酒屋",
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                    ),
+        return Navigator(
+          onGenerateRoute: (context) => MaterialPageRoute(
+            builder: (context) {
+              return Container(
+                decoration: const BoxDecoration(
+                  color: Color.fromARGB(255, 218, 243, 255),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
                   ),
                 ),
-              ),
-              //　カートのアイテム一覧を表示
-              Expanded(
-                child: ListView.builder(
-                  controller: scrollController,
-                  itemCount: restaurants.length,
-                  itemBuilder: (context, index) {
-                    final restaurant = restaurants[index];
-                    return GestureDetector(
-                      onTap: () async {
-                        final zoomLevel = await mapController.getZoomLevel();//現在のズームレベルを取得（現在のズームの倍率を変えないため）
-	                      //GoogleMapControllerのメソッドで任意の座標にカメラポジションを移動させる
-                        await mapController.animateCamera(
-                          CameraUpdate.newCameraPosition(
-                            CameraPosition(
-                              target: LatLng(
-                                restaurant.latitude,
-                                restaurant.longitude
-                              ),
-                              zoom: zoomLevel,
-                            ),
+                // カート商品表示のタイトルとアイテム一覧を表示
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    //　カート商品表示のタイトル
+                    const SizedBox(
+                      height: 40,
+                      child: Center(
+                        child: Text(
+                          "付近のタバコOKな居酒屋",
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
                           ),
-                        );
-                        setState(() {
-                          targetRestaurant = restaurant;
-                        });
-                      },
-                      child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            flex: 3,
-                            child: Container(
-                              height: 100,
-                              color: Colors.grey.withOpacity(0.7),
-                              child: const Center(
-                                  child: Text(
-                                "Image",
-                                style: TextStyle(
-                                  color: Colors.white,
+                        ),
+                      ),
+                    ),
+                    //　カートのアイテム一覧を表示
+                    Expanded(
+                      child: ListView.builder(
+                        controller: scrollController,
+                        itemCount: restaurants.length,
+                        itemBuilder: (context, index) {
+                          final restaurant = restaurants[index];
+                          return GestureDetector(
+                            onTap: () async {
+                              final zoomLevel = await mapController.getZoomLevel();//現在のズームレベルを取得（現在のズームの倍率を変えないため）
+                              //GoogleMapControllerのメソッドで任意の座標にカメラポジションを移動させる
+                              await mapController.animateCamera(
+                                CameraUpdate.newCameraPosition(
+                                  CameraPosition(
+                                    target: LatLng(
+                                      restaurant.latitude,
+                                      restaurant.longitude
+                                    ),
+                                    zoom: zoomLevel,
+                                  ),
                                 ),
-                              )),
-                            ),
-                          ),
-                          const SizedBox(
-                            width: 8,
-                          ),
-                          Expanded(
-                            flex: 7,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              );
+                              setState(() {
+                                targetRestaurant = restaurant;
+                              });
+                              // slideInModal();
+
+                              Navigator.push(
+                                context,
+                                  MaterialPageRoute(
+                                    builder: (context) => ModalDetailPage(),
+                                  ),
+                                );
+
+                            },
+                            child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Row(
                               children: [
-                                Text(
-                                  restaurant.name,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold
-                                  )
+                                Expanded(
+                                  flex: 3,
+                                  child: Container(
+                                    height: 100,
+                                    color: Colors.grey.withOpacity(0.7),
+                                    child: const Center(
+                                        child: Text(
+                                      "Image",
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                    )),
+                                  ),
                                 ),
-                                Text(restaurant.genre),
+                                const SizedBox(
+                                  width: 8,
+                                ),
+                                Expanded(
+                                  flex: 7,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        restaurant.name,
+                                        style: const TextStyle(
+                                          fontWeight: FontWeight.bold
+                                        )
+                                      ),
+                                      Text(restaurant.genre),
+                                    ],
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () {},
+                                  icon: const Icon(
+                                    Icons.delete,
+                                  ),
+                                ),
                               ],
                             ),
-                          ),
-                          IconButton(
-                            onPressed: () {},
-                            icon: const Icon(
-                              Icons.delete,
-                            ),
-                          ),
-                        ],
+                          )
+                          );
+                        },
                       ),
-                    )
-                    );
-                  },
+                    ),
+                  ],
                 ),
-              ),
-            ],
+              );
+
+            } ,
           ),
         );
+
+
       },
     );
   }
@@ -511,6 +588,26 @@ class _MapViewState extends State<MapView> {
     _getCurrentLocation();
   }
 
+
+  void slideInModal() async {
+    _scrollController.animateTo(
+      0.5,
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeInOut
+    );
+  }
+
+
+  void slideOutModal() async {
+    targetRestaurant = null;
+    _scrollController.animateTo(
+      0.3,
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeInOut
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     // 画面の幅と高さを決定する
@@ -566,6 +663,8 @@ class _MapViewState extends State<MapView> {
 
             _draggableScrollable(),
 
+            _test(),
+
             SafeArea(
               child: Align(
                 alignment: Alignment.topRight,
@@ -586,9 +685,7 @@ class _MapViewState extends State<MapView> {
                               child: Icon(Icons.add),
                             ),
                             onTap: () {
-                              mapController.animateCamera(
-                                CameraUpdate.zoomIn(),
-                              );
+                              slideInModal();
                             },
                           ),
                         ),
@@ -606,9 +703,10 @@ class _MapViewState extends State<MapView> {
                               child: Icon(Icons.remove),
                             ),
                             onTap: () {
-                              mapController.animateCamera(
-                                CameraUpdate.zoomOut(),
-                              );
+                              // slideOutModal();
+                              // mapController.animateCamera(
+                              //   CameraUpdate.zoomOut(),
+                              // );
                             },
                           ),
                         ),
@@ -662,6 +760,27 @@ class _MapViewState extends State<MapView> {
             // restaurantInfo()
 
           ],
+        ),
+      ),
+    );
+  }
+}
+
+
+class ModalDetailPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Modal Detail'),
+      ),
+      body: Container(
+        color: Colors.green,
+        child: Center(
+          child: Text(
+            'Detail Page',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
         ),
       ),
     );
