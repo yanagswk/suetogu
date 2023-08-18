@@ -225,62 +225,45 @@ class _MapViewState extends State<MapView> {
       child: Align(
         alignment: Alignment.topCenter,
         child: Padding(
-          padding: const EdgeInsets.only(top: 10.0),
+          padding: const EdgeInsets.only(top: 3),
           child: Container(
-            decoration: BoxDecoration(
-              color: Colors.black38
+            decoration: const BoxDecoration(
+              boxShadow: [
+                BoxShadow(
+                  blurRadius: 5,
+                  color: Colors.grey,
+                ),
+              ],
             ),
             width: MediaQuery.of(context).size.width * 0.85,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 5.0, bottom: 5.0),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  Text(
-                    '場所検索',
-                    style: TextStyle(fontSize: 20.0, color: Colors.white),
-                  ),
-                  SizedBox(height: 10),
-                  _textField(
-                      label: '開始位置',
-                      hint: '開始位置を入力',
-                      prefixIcon: Icon(Icons.directions_walk),
-                      controller: startAddressController,
-                      focusNode: startAddressFocusNode,
-                      width: MediaQuery.of(context).size.width,
-                      locationCallback: (String value) {
-                        setState(() {
-                          _startAddress = value;
-                        });
-                      }),
-                  SizedBox(height: 10),
-                  Visibility(
-                    visible: _placeDistance == null ? false : true,
-                    child: Text(
-                      'DISTANCE: $_placeDistance km',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16
-                      ),
-                    ),
-                  ),
-                  SizedBox(height: 5),
-                  ElevatedButton(
-                    onPressed: () {
-                      _RouteDistance();
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        'ルート検索'.toUpperCase(),
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 20.0,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+            child: TextFormField(
+              onChanged: (value) {},
+              decoration: InputDecoration(
+                enabledBorder: const OutlineInputBorder(
+                  borderSide: BorderSide(
+                    color: Colors.white,
+                  )
+                ),
+                fillColor: Colors.white,
+                filled: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 10,
+                ),
+                prefixIcon: IconButton(
+                  color: Colors.grey[500],
+                  icon: const Icon(Icons.arrow_back_ios_new),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                ),
+                hintText: '場所を検索',
+                hintStyle: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold
+                ),
               ),
             ),
           ),
@@ -354,8 +337,6 @@ class _MapViewState extends State<MapView> {
                               setState(() {
                                 targetRestaurant = restaurant;
                               });
-                              // slideInModal();
-
                               // Navigator.push(
                               //   context,
                               //   MaterialPageRoute(
@@ -463,38 +444,43 @@ class _MapViewState extends State<MapView> {
 
 
     // 2地点間の距離の算出方法
-  Future<bool> _RouteDistance() async {
+  Future<bool> _searchPlace(target) async {
     try {
-      for (var restaurant in restaurants) {
-        // print(restaurant.address);
-        // List<Location>? destinationPlacemark = await locationFromAddress(restaurant.address);
+      print(target);
+      List<Location>? destinationPlacemark = await locationFromAddress(target);
 
-        // double destinationLatitude = destinationPlacemark.first.latitude;
-        // double destinationLongitude = destinationPlacemark.first.longitude;
-        // String destinationCoordinatesString = '($destinationLatitude, $destinationLongitude)';
+      double destinationLatitude = destinationPlacemark.first.latitude;
+      double destinationLongitude = destinationPlacemark.first.longitude;
+      String destinationCoordinatesString = '($destinationLatitude, $destinationLongitude)';
 
-        // print(destinationCoordinatesString);
+      print(destinationCoordinatesString);
 
-        // // 目的位置用マーカー
-        // Marker destinationMarker = Marker(
-        //   markerId: MarkerId(destinationCoordinatesString),
-        //   position: LatLng(destinationLatitude, destinationLongitude),
-        //   infoWindow: InfoWindow(
-        //     title: restaurant.name,
-        //     snippet: "flutter",
-        //   ),
-        //   icon: BitmapDescriptor.defaultMarker,
-        //   onTap: () {
-        //     setState(() {
-        //       targetName = restaurant.name;
-        //       targetGenre = restaurant.genre;
-        //       targetAddress = restaurant.address;
-        //     });
-        //   },
-        // );
-        // // マーカーをリストに追加する
-        // markers.add(destinationMarker);
-      }
+      // 目的位置用マーカー
+      Marker destinationMarker = Marker(
+        markerId: MarkerId(destinationCoordinatesString),
+        position: LatLng(destinationLatitude, destinationLongitude),
+        infoWindow: InfoWindow(
+          title: "ここやねん",
+          snippet: "flutter",
+        ),
+        icon: BitmapDescriptor.defaultMarker,
+        onTap: () {
+        },
+      );
+      // マーカーをリストに追加する
+      markers.add(destinationMarker);
+
+      mapController.animateCamera(
+          CameraUpdate.newCameraPosition(
+            CameraPosition(
+              target: LatLng(
+                destinationLatitude,
+                destinationLongitude,
+              ),
+              zoom: 16.0,
+            ),
+          ),
+        );
 
       setState(() {});
 
@@ -715,7 +701,7 @@ class _MapViewState extends State<MapView> {
 
 
              // 開智位置と目的位置を入力するためのUI
-            // _searchRestaurant(),
+            _searchRestaurant(),
 
             // 店情報表示
             // restaurantInfo()
