@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -275,64 +276,6 @@ class _MapViewState extends State<MapView> {
   }
 
 
-  Widget _test() {
-    return DraggableScrollableSheet(
-      initialChildSize: 0.001,
-      minChildSize: 0.001,
-      maxChildSize: 0.9,
-      controller: _scrollController,
-      builder: (BuildContext context, ScrollController scrollController) {
-        return Container(
-          color: Colors.blue[100],
-          child: Column(
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.cancel_outlined),
-                    onPressed: () {
-                      slideOutModal();
-                    })
-                ],
-              ),
-              // Text(
-              //   targetRestaurant != null ? targetRestaurant!.name : "",
-              //   // "",
-              //   style: TextStyle(fontSize: 20.0, color: Colors.black),
-              // ),
-              // SizedBox(height: 10),
-              // Text(
-              //   // targetRestaurant != null ? targetRestaurant!.genre : "",
-              //   "",
-              //   style: TextStyle(fontSize: 15.0, color: Colors.black),
-              // ),
-              // SizedBox(height: 10),
-              // Text(
-              //   // targetRestaurant != null ? targetRestaurant!.address : "",
-              //   "",
-              //   style: TextStyle(fontSize: 15.0, color: Colors.black),
-              // ),
-              // SizedBox(height: 10),
-
-              Expanded(
-                child: ListView.builder(
-                  controller: scrollController,
-                  itemCount: 25,
-                  itemBuilder: (BuildContext context, int index) {
-                    return ListTile(title: Text('Item $index'));
-                  },
-                ),
-              )
-            ]
-          )
-
-        );
-      },
-    );
-  }
-
-
   // ドラグアップできるウィジェット
   Widget _draggableScrollable() {
     return DraggableScrollableSheet(
@@ -390,6 +333,10 @@ class _MapViewState extends State<MapView> {
                                   ),
                                 ),
                               );
+                              String latitude = restaurant.latitude.toString();
+                              String longitude = restaurant.longitude.toString();
+                              String location = '($latitude, $longitude)';
+                              await mapController.showMarkerInfoWindow(MarkerId(location)); // マーカータップ以外のアクションから吹き出しを表示
                               setState(() {
                                 targetRestaurant = restaurant;
                               });
@@ -431,13 +378,20 @@ class _MapViewState extends State<MapView> {
                                   child: Container(
                                     height: 100,
                                     color: Colors.grey.withOpacity(0.7),
-                                    child: const Center(
-                                        child: Text(
-                                      "Image",
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                    )),
+                                    // child: const Center(
+                                    //     child: Text(
+                                    //   "Image",
+                                    //   style: TextStyle(
+                                    //     color: Colors.white,
+                                    //   ),
+                                    // )),
+                                    child: CachedNetworkImage(
+                                      imageUrl: restaurant.images[0],
+                                        placeholder: (context, url) => const Center(
+                                          child: CircularProgressIndicator(),
+                                        ),
+                                        errorWidget: (context, url, dynamic error) => const Icon(Icons.error),
+                                    ),
                                   ),
                                 ),
                                 const SizedBox(
@@ -642,8 +596,6 @@ class _MapViewState extends State<MapView> {
 
             _draggableScrollable(),
 
-            _test(),
-
             SafeArea(
               child: Align(
                 alignment: Alignment.topRight,
@@ -664,7 +616,9 @@ class _MapViewState extends State<MapView> {
                               child: Icon(Icons.add),
                             ),
                             onTap: () {
-                              slideInModal();
+                              mapController.animateCamera(
+                                CameraUpdate.zoomIn(),
+                              );
                             },
                           ),
                         ),
@@ -682,10 +636,9 @@ class _MapViewState extends State<MapView> {
                               child: Icon(Icons.remove),
                             ),
                             onTap: () {
-                              // slideOutModal();
-                              // mapController.animateCamera(
-                              //   CameraUpdate.zoomOut(),
-                              // );
+                              mapController.animateCamera(
+                                CameraUpdate.zoomOut(),
+                              );
                             },
                           ),
                         ),
@@ -695,6 +648,7 @@ class _MapViewState extends State<MapView> {
                 ),
               ),
             ),
+
             SafeArea(
               child: Align(
                 alignment: Alignment.bottomRight,

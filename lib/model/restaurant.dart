@@ -22,6 +22,8 @@ class Restaurant {
   late double longitude;
   // ドキュメントID
   late String id;
+  // 画像url
+  late List images;
 
   Restaurant(DocumentSnapshot doc) {
     name = doc['name'];
@@ -34,6 +36,7 @@ class Restaurant {
     latitude = doc['latitude'];
     longitude = doc['longitude'];
     id = doc.id;
+    images = doc['images'];
   }
 
 }
