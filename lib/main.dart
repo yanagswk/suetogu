@@ -5,6 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:suerogu/common/shared_preferences.dart';
 import 'package:suerogu/firestore.dart';
 import 'package:suerogu/model/restaurant.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -64,6 +65,7 @@ class _MapViewState extends State<MapView> {
 
   List<Restaurant> restaurants = [];
   Restaurant? targetRestaurant;
+  late List<String> ids;
 
   // PolylinePoints用オブジェクト
   late PolylinePoints polylinePoints;
@@ -153,6 +155,18 @@ class _MapViewState extends State<MapView> {
     } catch (e) {
       print(e);
     }
+  }
+
+
+  // お気に入りに追加/削除
+  void _setFavorite(String id) {
+    if (ids.contains(id)) {
+      ids.remove(id);
+    } else {
+      ids.add(id);
+      ids = ids.toSet().toList();
+    }
+    SharedPrefe.setFavoriteRestaurant(ids);
   }
 
 
@@ -413,10 +427,19 @@ class _MapViewState extends State<MapView> {
                                   ),
                                 ),
                                 IconButton(
-                                  onPressed: () {},
-                                  icon: const Icon(
-                                    Icons.delete,
+                                  onPressed: () {
+                                    setState(() {
+                                      _setFavorite(restaurant.id);
+                                    });
+                                  },
+                                  selectedIcon: const Icon(Icons.favorite),
+                                  icon: Icon(
+                                    Icons.favorite_border,
+                                    color: ids.contains(restaurant.id)
+                                      ? Colors.red
+                                      : Colors.white,
                                   ),
+                                  isSelected: ids.contains(restaurant.id),
                                 ),
                               ],
                             ),
@@ -513,12 +536,17 @@ class _MapViewState extends State<MapView> {
     polylines[id] = polyline;
   }
 
+  Future _init() async {
+    await SharedPrefe.init();
+    ids = SharedPrefe.getFavoriteRestaurant();
+  }
 
 
   @override
   void initState() {
     super.initState();
     _getCurrentLocation();
+    _init();
   }
 
 
