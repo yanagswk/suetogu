@@ -34,9 +34,12 @@ class DraggableScrollableState extends State<DraggableScrollable> {
   // お気に入りid一覧
   late List<String> ids;
 
+  final _scrollController = DraggableScrollableController();
 
   // モーダル内で遷移する
-  void routeDetail(Restaurant restaurant) {
+  void routeDetail(Restaurant restaurant) async {
+    await animateToDrag(0.4);
+
     Navigator.of(targetContext!).push(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) {
@@ -76,6 +79,14 @@ class DraggableScrollableState extends State<DraggableScrollable> {
   }
 
 
+  // DraggableScrollableSheetの表示割合を変更
+  Future<void> animateToDrag(double size) async {
+    _scrollController.animateTo(size,
+      duration: Duration(milliseconds: 100), curve: Curves.easeInOut
+    );
+  }
+
+
   @override
   void initState() {
     super.initState();
@@ -86,9 +97,10 @@ class DraggableScrollableState extends State<DraggableScrollable> {
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.2,
+      initialChildSize: 0.4,
       minChildSize: 0.2,
-      maxChildSize: 0.4,
+      maxChildSize: 0.7,
+      controller: _scrollController,
       builder: (BuildContext context, ScrollController scrollController) {
         return Navigator(
           onGenerateRoute: (context) => MaterialPageRoute(
@@ -106,20 +118,31 @@ class DraggableScrollableState extends State<DraggableScrollable> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    //　カート商品表示のタイトル
-                    const SizedBox(
-                      height: 40,
-                      child: Center(
-                        child: Text(
-                          "付近のタバコOKな居酒屋",
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
+                    GestureDetector(
+                      // ドラッグ中に呼ばれる
+                      onVerticalDragUpdate: (DragUpdateDetails details) {
+                        final dy = details.delta.dy; // // y座標の移動距離を取得
+                        // 正の数の場合は上に移動。負の数の場合は下に移動
+                        if (dy.isNegative) {
+                          animateToDrag(0.9);
+                        } else {
+                          animateToDrag(0.1);
+                        }
+                      },
+                      child: const SizedBox(
+                        height: 40,
+                        child: Center(
+                          child: Text(
+                            "付近のタバコOKな居酒屋",
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                    //　カートのアイテム一覧を表示
+                    // 　カートのアイテム一覧を表示
                     Expanded(
                       child: ListView.builder(
                         controller: scrollController,

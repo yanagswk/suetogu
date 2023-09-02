@@ -226,6 +226,7 @@ class _MapViewState extends State<MapView> {
             snippet: "($latitude, $longitude)",
           ),
           onTap: () {
+            print("やあああああああああ");
             setState(() {
               targetRestaurant = restaurant;
             });
@@ -244,7 +245,10 @@ class _MapViewState extends State<MapView> {
       },
       // 地図も中心の経度と緯度を取得
       onCameraMove:(position) {
+        // 地図の中心取得
         _afterCurrentPosition = position.target;
+        // DraggableScrollableSheetへ通知
+        // draggableScrollableKey.currentState?.animateToDrag(0.1);
       },
       // 地図のスワイプが完了したら最後に呼ばれる
       onCameraIdle:() {
@@ -588,6 +592,7 @@ class _MapViewState extends State<MapView> {
           children: <Widget>[
             // google map
             googleMap(draggableScrollableKey),
+
             // 周辺の居酒屋一覧
             DraggableScrollable(
               key: draggableScrollableKey,
@@ -595,6 +600,7 @@ class _MapViewState extends State<MapView> {
               mapController: mapController,
               updateFunc: updateTargetRestaurant,
             ),
+
             // ズームイン・ズームアウト
             zoomCamera(),
             // 現在地
@@ -609,3 +615,6 @@ class _MapViewState extends State<MapView> {
     );
   }
 }
+
+
+

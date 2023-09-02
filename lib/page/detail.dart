@@ -27,26 +27,43 @@ class _DetailState extends State<Detail> {
     setState(() {});
   }
 
+  Widget BackButton() {
+    return IconButton(
+      icon: const Icon(
+        Icons.cancel_outlined,
+        color: Colors.grey,
+      ),
+      onPressed: () {
+        // 一番最初の一覧画面に戻る
+        Navigator.popUntil(context, (route) => route.isFirst);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Modal Detail'),
-      ),
+      backgroundColor: Color.fromARGB(255, 218, 243, 255),
       body: Container(
-        // color: Colors.green,
         padding: const EdgeInsets.all(10),
         child: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                restaurant.name,
-                style: const TextStyle(
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16
-                ),
+              Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      restaurant.name,
+                      style: const TextStyle(
+                        color: Colors.black,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16
+                      ),
+                    ),
+                  ),
+                  BackButton()
+                ],
               ),
               const SizedBox(height: 10),
               Text(restaurant.genre),
@@ -88,3 +105,26 @@ class _DetailState extends State<Detail> {
     );
   }
 }
+
+
+// class BackButton extends StatelessWidget {
+//   const BackButton({Key? key}) : super(key: key);
+
+//   @override
+//   Widget build(BuildContext context) {
+//     return TextButton(
+//       child: const Text(
+//         '<',
+//         style: TextStyle(
+//           color: Colors.white,
+//           fontWeight: FontWeight.bold,
+//           fontSize: 12.0,
+//         ),
+//       ),
+//       onPressed: () {
+//         // 一番最初の一覧画面に戻る
+//         Navigator.popUntil(context, (route) => route.isFirst);
+//       },
+//     );
+//   }
+// }
