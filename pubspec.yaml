@@ -46,6 +46,7 @@ dependencies:
   cached_network_image: ^3.2.1
   shared_preferences: ^2.0.15
   geoflutterfire2: ^2.3.15
+  url_launcher: ^6.1.11
 
 
 dev_dependencies:

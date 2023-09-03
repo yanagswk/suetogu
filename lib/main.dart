@@ -226,7 +226,6 @@ class _MapViewState extends State<MapView> {
             snippet: "($latitude, $longitude)",
           ),
           onTap: () {
-            print("やあああああああああ");
             setState(() {
               targetRestaurant = restaurant;
             });
@@ -316,9 +315,10 @@ class _MapViewState extends State<MapView> {
   Widget moveCurrentPlace() {
     return SafeArea(
       child: Align(
-        alignment: Alignment.bottomRight,
+        alignment: Alignment.topRight,
         child: Padding(
-          padding: const EdgeInsets.only(right: 10.0, bottom: 10.0),
+          // padding: const EdgeInsets.only(right: 10.0, bottom: 10.0),
+          padding: const EdgeInsets.only(top: 60.0, right: 10.0),
           // 現在地表示ボタン
           child: ClipOval(
             child: Material(
@@ -408,7 +408,7 @@ class _MapViewState extends State<MapView> {
   }
 
 
-  Widget targetAreaSearch() {
+  Widget _targetAreaSearch() {
     return SafeArea(
       child: Align(
         alignment: Alignment.topCenter,
@@ -602,11 +602,14 @@ class _MapViewState extends State<MapView> {
             ),
 
             // ズームイン・ズームアウト
-            zoomCamera(),
+            // zoomCamera(),
             // 現在地
             moveCurrentPlace(),
             // エリア検索
-            targetAreaSearch(),
+            _targetAreaSearch(),
+
+            // TODO: ジャンル候補絞り込みchip
+
              // 開智位置と目的位置を入力するためのUI
             _searchRestaurant(),
           ],

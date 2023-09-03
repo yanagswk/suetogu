@@ -43,7 +43,11 @@ class DraggableScrollableState extends State<DraggableScrollable> {
     Navigator.of(targetContext!).push(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) {
-          return Detail(restaurant: restaurant);
+          return Detail(
+            restaurant: restaurant,
+            isFavorite: ids.contains(restaurant.id),
+            updateFavorite: _setFavorite
+          );
         },
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           final Offset begin = Offset(1.0, 0.0);
@@ -70,6 +74,9 @@ class DraggableScrollableState extends State<DraggableScrollable> {
       ids = ids.toSet().toList();
     }
     SharedPrefe.setFavoriteRestaurant(ids);
+    setState(() {
+      ids;
+    });
   }
 
 
@@ -121,7 +128,7 @@ class DraggableScrollableState extends State<DraggableScrollable> {
                     GestureDetector(
                       // ドラッグ中に呼ばれる
                       onVerticalDragUpdate: (DragUpdateDetails details) {
-                        final dy = details.delta.dy; // // y座標の移動距離を取得
+                        final dy = details.delta.dy; // y座標の移動距離を取得
                         // 正の数の場合は上に移動。負の数の場合は下に移動
                         if (dy.isNegative) {
                           animateToDrag(0.9);
@@ -142,12 +149,17 @@ class DraggableScrollableState extends State<DraggableScrollable> {
                         ),
                       ),
                     ),
+                    Divider(
+                      color: Colors.grey[300],
+                      thickness: 1,
+                      height: 20,
+                    ),
                     // 　カートのアイテム一覧を表示
                     Expanded(
                       child: ListView.builder(
                         controller: scrollController,
                         itemCount: widget.restaurants.length,
-                        itemBuilder: (contexttttt, index) {
+                        itemBuilder: (context, index) {
                           final restaurant = widget.restaurants[index];
                           return GestureDetector(
                             onTap: () async {
@@ -180,13 +192,6 @@ class DraggableScrollableState extends State<DraggableScrollable> {
                                   child: Container(
                                     height: 100,
                                     color: Colors.grey.withOpacity(0.7),
-                                    // child: const Center(
-                                    //     child: Text(
-                                    //   "Image",
-                                    //   style: TextStyle(
-                                    //     color: Colors.white,
-                                    //   ),
-                                    // )),
                                     child: CachedNetworkImage(
                                       imageUrl: restaurant.images[0],
                                         placeholder: (context, url) => const Center(
@@ -216,9 +221,7 @@ class DraggableScrollableState extends State<DraggableScrollable> {
                                 ),
                                 IconButton(
                                   onPressed: () {
-                                    setState(() {
-                                      _setFavorite(restaurant.id);
-                                    });
+                                    _setFavorite(restaurant.id);
                                   },
                                   selectedIcon: const Icon(Icons.favorite),
                                   icon: Icon(
