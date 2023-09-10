@@ -77,6 +77,9 @@ class _MapViewState extends State<MapView> {
   // 2点間を結ぶポリラインを格納した地図
   Map<PolylineId, Polyline> polylines = {};
 
+  final genres = ["焼肉", "海鮮", "焼き鳥", "中華", "鍋", "韓国料理"];
+  int? _choiceIndex;
+
 
   // 現在位置の取得方法
   _getCurrentLocation() async {
@@ -84,12 +87,13 @@ class _MapViewState extends State<MapView> {
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        return Future.error('Location permissions are deniedddddddddd');
+        return Future.error('Location permissions are denied');
       }
     }
 
     await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high)
         .then((Position position) async {
+
       setState(() async {
         // 位置を変数に格納する
         _currentPosition = position;
@@ -111,8 +115,8 @@ class _MapViewState extends State<MapView> {
 
         // ここで周辺の情報取得する
         await _getRestaurant(
-          _currentPosition.latitude,
-          _currentPosition.longitude,
+          latitude: _currentPosition.latitude,
+          longitude: _currentPosition.longitude,
         );
       });
       await _getAddress();
@@ -144,10 +148,10 @@ class _MapViewState extends State<MapView> {
   // }
 
 
-  _getRestaurant(
-    double latitude,
-    double longitude,
-  ) async {
+  _getRestaurant({
+    required double latitude,
+    required double longitude,
+  }) async {
     print("検索");
     print("$latitude, $longitude");
 
@@ -155,9 +159,13 @@ class _MapViewState extends State<MapView> {
     setState(() {
       restaurants.clear();
     });
-    var stream = await store.aaaaaaa(
-      latitude,
-      longitude,
+
+    String? genre = _choiceIndex == null ? null : genres[_choiceIndex!];
+
+    var stream = await store.fetchRest(
+      latitude: latitude,
+      longitude: longitude,
+      genre: genre
     );
 
     stream.listen((List<DocumentSnapshot> documentList) {
@@ -317,8 +325,7 @@ class _MapViewState extends State<MapView> {
       child: Align(
         alignment: Alignment.topRight,
         child: Padding(
-          // padding: const EdgeInsets.only(right: 10.0, bottom: 10.0),
-          padding: const EdgeInsets.only(top: 60.0, right: 10.0),
+          padding: const EdgeInsets.only(top: 90.0, right: 10.0),
           // 現在地表示ボタン
           child: ClipOval(
             child: Material(
@@ -338,7 +345,7 @@ class _MapViewState extends State<MapView> {
                           _currentPosition.latitude,
                           _currentPosition.longitude,
                         ),
-                        zoom: 18.0,
+                        zoom: 16.0,
                       ),
                     ),
                   );
@@ -352,7 +359,7 @@ class _MapViewState extends State<MapView> {
   }
 
 
-  Widget zoomCamera() {
+  Widget _zoomCamera() {
     return SafeArea(
       child: Align(
         alignment: Alignment.topRight,
@@ -413,20 +420,19 @@ class _MapViewState extends State<MapView> {
       child: Align(
         alignment: Alignment.topCenter,
         child: Padding(
-          padding: const EdgeInsets.only(top: 50.0),
+          padding: const EdgeInsets.only(top: 90.0),
           // 現在地表示ボタン
           child: Container(
             decoration: BoxDecoration(
               boxShadow: [
                 BoxShadow(
-                  blurRadius: 30,
-                  color: Colors.grey.shade400,
+                  blurRadius: 20,
+                  color: Colors.grey.shade200,
                 ),
               ],
             ),
             child: ActionChip(
               backgroundColor: Colors.white,
-              // avatar: Icon(favorite ? Icons.favorite : Icons.favorite_border),
               label: const Text(
                 'このエリアを検索',
                 style: TextStyle(
@@ -436,13 +442,52 @@ class _MapViewState extends State<MapView> {
               ),
               onPressed: () {
                 setState(() {
-                  print(_afterCurrentPosition);
                   _getRestaurant(
-                    _afterCurrentPosition.latitude,
-                    _afterCurrentPosition.longitude
+                    latitude: _afterCurrentPosition.latitude,
+                    longitude: _afterCurrentPosition.longitude
                   );
                 });
               },
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+
+  Widget _genreChoiceChip() {
+    return SafeArea(
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 50.0),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: genres.asMap().entries.map((genre) {
+                bool isSelect = _choiceIndex == genre.key;
+                return ChoiceChip(
+                  label: Text(
+                    genre.value,
+                    style: TextStyle(
+                      color: isSelect ? Colors.white : Colors.black,
+                    ),
+                  ),
+                  selected: isSelect,
+                  backgroundColor: Colors.grey[200],
+                  selectedColor: Colors.black,
+                  onSelected: (_) {
+                    setState(() {
+                      _choiceIndex = _choiceIndex != genre.key ? genre.key : null;
+                      _getRestaurant(
+                        latitude: _currentPosition.latitude,
+                        longitude: _currentPosition.longitude,
+                      );
+                    });
+                  }
+                );
+              }).toList()
             ),
           ),
         ),
@@ -492,8 +537,8 @@ class _MapViewState extends State<MapView> {
 
       // _searchPlace()
       _getRestaurant(
-        destinationLatitude,
-        destinationLongitude
+        latitude: destinationLatitude,
+        longitude: destinationLongitude
       );
 
       setState(() {});
@@ -602,13 +647,18 @@ class _MapViewState extends State<MapView> {
             ),
 
             // ズームイン・ズームアウト
-            // zoomCamera(),
+            // _zoomCamera(),
+
             // 現在地
             moveCurrentPlace(),
+
+            // ジャンル絞り込み
+            _genreChoiceChip(),
+
             // エリア検索
             _targetAreaSearch(),
 
-            // TODO: ジャンル候補絞り込みchip
+            // TODO: お気に入り一覧
 
              // 開智位置と目的位置を入力するためのUI
             _searchRestaurant(),

@@ -43,6 +43,8 @@ class DraggableScrollableState extends State<DraggableScrollable> {
     Navigator.of(targetContext!).push(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) {
+          // TODO: 遷移するのではなく、Visibilityを使ってDraggableScrollableを非表示・表示にできるか？
+          // https://zenn.dev/captain_blue/articles/flutter-control-visibility
           return Detail(
             restaurant: restaurant,
             isFavorite: ids.contains(restaurant.id),
@@ -215,7 +217,7 @@ class DraggableScrollableState extends State<DraggableScrollable> {
                                           fontWeight: FontWeight.bold
                                         )
                                       ),
-                                      Text(restaurant.genre),
+                                      Text(restaurant.genre.join(", ")),
                                     ],
                                   ),
                                 ),

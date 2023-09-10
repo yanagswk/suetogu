@@ -9,7 +9,7 @@ class Restaurant {
   // 食べログ内評価
   late String evaluation;
   // ジャンル
-  late String genre;
+  late List genre;
   // 電話番号
   late String phone;
   // 営業時間

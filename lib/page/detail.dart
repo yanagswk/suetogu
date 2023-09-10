@@ -240,7 +240,7 @@ class _DetailState extends State<Detail> {
 
                     _restaurantContent(
                       title: "ジャンル",
-                      widget: Text(restaurant.genre),
+                      widget: Text(restaurant.genre.join(", ")),
                       width: deviceWidth
                     ),
                     _restaurantContent(

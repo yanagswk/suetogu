@@ -78,20 +78,29 @@ class FireStore {
   }
 
 
-  aaaaaaa (
-    double latitudee,  // 緯度
-    double longitudee,  // 経度
-  ) async {
-    GeoFirePoint center = geo.point(latitude: latitudee, longitude: longitudee);
+  fetchRest ({
+    required double latitude,  // 緯度
+    required double longitude,  // 経度
+    String? genre
+  }) async {
 
-    var collectionReference = db.collection(collection);
+    GeoFirePoint center = geo.point(
+      latitude: latitude,
+      longitude: longitude
+    );
+
+    Query<Map<String, dynamic>> collectionReference = db.collection(collection);
+    if (genre != null) {
+      print("ジャンル！！");
+      collectionReference = collectionReference.where("genre", arrayContainsAny: [genre]);
+    }
 
     double radius = 0.3;
     String field = 'position';
 
     Stream<List<DocumentSnapshot>> stream =
       geo.collection(collectionRef: collectionReference)
-      .within(center: center, radius: radius, field: field);
+        .within(center: center, radius: radius, field: field);
 
     return stream;
   }
