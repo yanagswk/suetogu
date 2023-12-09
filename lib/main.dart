@@ -12,6 +12,7 @@ import 'package:suerogu/model/restaurant.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:suerogu/page/detail.dart';
 import 'package:suerogu/widget/draggable_scrollable.dart';
+import 'package:suerogu/widget/favorite_draggable_scrollable.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,8 +21,7 @@ void main() async {
 }
 
 class Secrets {
-  // Google Maps APIキーをここに追加
-  static const API_KEY = 'AIzaSyAEnWfsC84p0E4hFsTrGFMsBKkYdlGryds';
+  static const API_KEY = '';
 }
 
 class MyApp extends StatelessWidget {
@@ -79,6 +79,8 @@ class _MapViewState extends State<MapView> {
 
   final genres = ["焼肉", "海鮮", "焼き鳥", "中華", "鍋", "韓国料理"];
   int? _choiceIndex;
+
+  bool is_favorite = false;
 
 
   // 現在位置の取得方法
@@ -174,6 +176,7 @@ class _MapViewState extends State<MapView> {
       print(restaurants);
       setState(() {
         restaurants;
+        is_favorite = false;
       });
     });
   }
@@ -216,7 +219,23 @@ class _MapViewState extends State<MapView> {
   }
 
 
-  Widget googleMap(GlobalObjectKey<DraggableScrollableState> draggableScrollableKey) {
+  _getFavoriteRest() async {
+    final store = FireStore();
+    setState(() {
+      restaurants.clear();
+    });
+
+    restaurants = await store.fetchFavoriteRest(
+      ids
+    );
+    setState(() {
+      restaurants;
+    });
+  }
+
+
+  // Widget googleMap(GlobalObjectKey<DraggableScrollableState> draggableScrollableKey) {
+  Widget googleMap(draggableScrollableKey) {
     return GoogleMap(
       markers: restaurants.map((Restaurant restaurant) {
         var latitude = restaurant.latitude;
@@ -349,6 +368,41 @@ class _MapViewState extends State<MapView> {
                       ),
                     ),
                   );
+                },
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+
+  // 現在地を表示
+  Widget _favoriteRestaurantButton(double height, draggableScrollableKey) {
+    // var draggableScrollableKey2 = GlobalObjectKey<FavoriteDraggableScrollableState>(context);
+    return SafeArea(
+      child: Align(
+        alignment: Alignment.topRight,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 150.0, right: 10.0),
+          // 現在地表示ボタン
+          child: ClipOval(
+            child: Material(
+              color: Colors.orange.shade100, // ボタンを押す前のカラー
+              child: InkWell(
+                splashColor: Colors.blue, // ボタンを押した後のカラー
+                child: const SizedBox(
+                  width: 50,
+                  height: 50,
+                  child: Icon(Icons.list_alt_outlined),
+                ),
+                onTap: () {
+                  // お気に入り一覧取得する
+                  _getFavoriteRest();
+                  setState(() {
+                    is_favorite = true;
+                  });
                 },
               ),
             ),
@@ -627,7 +681,7 @@ class _MapViewState extends State<MapView> {
     var height = MediaQuery.of(context).size.height;
     var width = MediaQuery.of(context).size.width;
 
-    final draggableScrollableKey = GlobalObjectKey<DraggableScrollableState>(context);
+    var draggableScrollableKey = GlobalObjectKey<DraggableScrollableState>(context);
 
     return Container(
       height: height,
@@ -644,7 +698,17 @@ class _MapViewState extends State<MapView> {
               restaurants: restaurants,
               mapController: mapController,
               updateFunc: updateTargetRestaurant,
+              isFavorite: is_favorite,
+              allRest: _getCurrentLocation
             ),
+
+            // お気に入り居酒屋一覧
+            // FavoriteDraggableScrollable(
+            //   key: draggableScrollableKey2,
+            //   restaurants: restaurants,
+            //   mapController: mapController,
+            //   updateFunc: updateTargetRestaurant,
+            // ),
 
             // ズームイン・ズームアウト
             // _zoomCamera(),
@@ -658,7 +722,8 @@ class _MapViewState extends State<MapView> {
             // エリア検索
             _targetAreaSearch(),
 
-            // TODO: お気に入り一覧
+            // お気に入り一覧
+            _favoriteRestaurantButton(height, draggableScrollableKey),
 
              // 開智位置と目的位置を入力するためのUI
             _searchRestaurant(),

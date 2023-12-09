@@ -6,7 +6,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:suerogu/page/detail.dart';
 
 
-class DraggableScrollable extends StatefulWidget {
+class FavoriteDraggableScrollable extends StatefulWidget {
   // ゲーム情報
   List<Restaurant> restaurants;
   // マップの表示制御用
@@ -14,24 +14,18 @@ class DraggableScrollable extends StatefulWidget {
   // ターゲット店舗更新
   void Function(Restaurant) updateFunc;
 
-  void Function() allRest;
-
-  bool isFavorite;
-
-  DraggableScrollable({
+  FavoriteDraggableScrollable({
     super.key,
     required this.restaurants,
     this.mapController,
     required this.updateFunc,
-    required this.isFavorite,
-    required this.allRest
   });
 
   @override
-  State<DraggableScrollable> createState() => DraggableScrollableState();
+  State<FavoriteDraggableScrollable> createState() => FavoriteDraggableScrollableState();
 }
 
-class DraggableScrollableState extends State<DraggableScrollable> {
+class FavoriteDraggableScrollableState extends State<FavoriteDraggableScrollable> {
 
   Restaurant? targetRestaurant;
 
@@ -41,8 +35,6 @@ class DraggableScrollableState extends State<DraggableScrollable> {
   late List<String> ids;
 
   final _scrollController = DraggableScrollableController();
-
-  var title = "付近のタバコOKな居酒屋";
 
   // モーダル内で遷移する
   void routeDetail(Restaurant restaurant) async {
@@ -106,14 +98,6 @@ class DraggableScrollableState extends State<DraggableScrollable> {
 
   @override
   void initState() {
-    if (widget.isFavorite) {
-      title = "お気に入り一覧";
-    } else {
-      title = "付近のタバコOKな居酒屋";
-    }
-    setState(() {
-      title;
-    });
     super.initState();
     _init();
   }
@@ -122,8 +106,8 @@ class DraggableScrollableState extends State<DraggableScrollable> {
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.4,
-      minChildSize: 0.2,
+      initialChildSize: 0.5,
+      minChildSize: 0.5,
       maxChildSize: 0.7,
       controller: _scrollController,
       builder: (BuildContext context, ScrollController scrollController) {
@@ -160,26 +144,17 @@ class DraggableScrollableState extends State<DraggableScrollable> {
                           child: Row(
                             children: [
                               Text(
-                                title,
+                                "お気に入り一覧",
                                 style: const TextStyle(
                                   fontSize: 24,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
-                              Visibility(
-                                visible: widget.isFavorite,
-                                child: IconButton(
-                                  // constraints: const BoxConstraints(),
-                                  icon: const Icon(
-                                    Icons.clear_outlined,
-                                    color: Colors.black,
-                                  ),
-                                  onPressed: () {
-                                    // 子から親へ
-                                    print("やあ");
-                                    widget.allRest();
-                                  },
-                                ),
+                              IconButton(
+                                color: Colors.grey[500],
+                                icon: const Icon(Icons.clear_outlined),
+                                onPressed: () {
+                                },
                               )
                             ],
                           ),
@@ -279,7 +254,6 @@ class DraggableScrollableState extends State<DraggableScrollable> {
                   ],
                 ),
               );
-
             } ,
           ),
         );
