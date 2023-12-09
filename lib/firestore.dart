@@ -78,6 +78,7 @@ class FireStore {
   }
 
 
+
   fetchRest ({
     required double latitude,  // 緯度
     required double longitude,  // 経度
@@ -103,5 +104,13 @@ class FireStore {
         .within(center: center, radius: radius, field: field);
 
     return stream;
+  }
+
+
+  Future<List<Restaurant>> fetchFavoriteRest (List ids) async {
+    final rest = await db.collection(collection)
+      .where(FieldPath.documentId, whereIn: ids)
+      .get();
+    return rest.docs.map((doc) => Restaurant(doc)).toList();
   }
 }
